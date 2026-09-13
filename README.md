@@ -21,6 +21,13 @@ This design uses the standard 8N1 asynchronous serial frame.
 ```text
 Idle | Start | D0 D1 D2 D3 D4 D5 D6 D7 | Stop
   1  |   0   |          8 Data Bits     |  1
+```
+
+- 1 Start bit
+- 8 Data bits
+- No parity bit
+- 1 Stop bit
+
 ## Design Architecture
 
 ```text
@@ -38,6 +45,8 @@ rx -------------->|                      |
                   |    Baud Generator    |------> rx_error
                   |       RX FSM         |
                   +----------------------+
+```
+
 ## Transmitter
 
 The transmitter converts 8-bit parallel data into an asynchronous serial data stream.
@@ -52,6 +61,7 @@ The transmitter converts 8-bit parallel data into an asynchronous serial data st
 6. Return to the idle state.
 
 The `tx_busy` signal indicates that transmission is in progress.
+
 ## Receiver
 
 The receiver converts the incoming asynchronous serial data stream into 8-bit parallel data.
@@ -67,6 +77,7 @@ The receiver converts the incoming asynchronous serial data stream into 8-bit pa
 7. Assert `rx_valid` when valid data is received.
 
 The `rx_error` signal indicates a framing error when the expected stop bit is not detected.
+
 ## Baud Rate Generation
 
 The baud-rate timing is generated from the system clock.
@@ -75,6 +86,20 @@ The number of clock cycles required for one baud period is calculated as:
 
 ```text
 BAUD_TICKS = CLK_FREQ / BAUD_RATE
+```
+
+For the simulation:
+
+```text
+CLK_FREQ  = 1 MHz
+BAUD_RATE = 9600
+```
+
+Therefore:
+
+```text
+BAUD_TICKS ≈ 1,000,000 / 9,600 ≈ 104 clock cycles
+```
 
 ## Module Interface
 
@@ -97,13 +122,14 @@ BAUD_TICKS = CLK_FREQ / BAUD_RATE
 | `rx_data` | 8-bit received data |
 | `rx_valid` | Indicates valid received data |
 | `rx_error` | Indicates framing error |
+
 ## Parameters
 
 The USART module provides configurable parameters for different system clock frequencies and baud rates.
 
-| Parameter | Default Value | Description |
+| Parameter | Simulation Value | Description |
 |---|---:|---|
-| `CLK_FREQ` | 50,000,000 | System clock frequency in Hz |
+| `CLK_FREQ` | 1,000,000 Hz | Simulation clock frequency |
 | `BAUD_RATE` | 9,600 | Serial communication baud rate |
 
 Example:
@@ -111,6 +137,10 @@ Example:
 ```verilog
 parameter integer CLK_FREQ  = 1_000_000;
 parameter integer BAUD_RATE = 9_600;
+```
+
+The `CLK_FREQ` parameter can be changed according to the target hardware clock frequency.
+
 ## Verification
 
 The USART was verified using a loopback configuration in which the transmitter output is directly connected to the receiver input.
@@ -123,6 +153,33 @@ The USART was verified using a loopback configuration in which the transmitter o
         |            |   |
         | RX <-------+   |
         +----------------+
+```
+
+The testbench transmits multiple 8-bit data patterns and checks the received data.
+
+### Test Data
+
+The following hexadecimal values were used during verification:
+
+```text
+41
+42
+55
+AA
+FF
+00
+```
+
+The received data was observed using the simulation waveform.
+
+### Simulation Tools
+
+- Icarus Verilog
+- EDA Playground
+- EPWave
+
+The testbench generates a VCD waveform for signal analysis.
+
 ## Project Structure
 
 ```text
@@ -136,6 +193,8 @@ USART-RTL-Verilog/
 │   └── usart_epwave.jpeg
 ├── LICENSE
 └── README.md
+```
+
 ## Design Concepts Demonstrated
 
 This project demonstrates practical RTL design concepts including:
@@ -151,6 +210,7 @@ This project demonstrates practical RTL design concepts including:
 - Testbench development
 - Loopback verification
 - Waveform analysis
+
 ## Future Improvements
 
 - Configurable parity support
@@ -160,11 +220,13 @@ This project demonstrates practical RTL design concepts including:
 - FIFO buffering
 - FPGA hardware implementation
 - More extensive automated verification
+
 ## Author
 
 **Venkata Lakshmi**
 
 Electronics and Communication Engineering
+
 ## License
 
 This project is licensed under the MIT License.
